@@ -2,28 +2,31 @@
 
 namespace Drush\LWG;
 
+use Drush\Command\CommandBase;
+
 /**
  * Class Project
  * @package Drush\LWG
  */
 class Project {
 
-  private $info = FALSE;
-  private $path = FALSE;
-  private $valid = FALSE;
+  protected $info = FALSE;
+  protected $name = FALSE;
+  protected $path = FALSE;
+  protected $valid = FALSE;
 
   /**
-   * @var Command
+   * @var CommandBase
    */
-  private $command;
+  protected $command;
 
   /**
    * Class constructor.
    *
-   * @param Command $command
+   * @param CommandBase $command
    *   The current instance of the command.
    */
-  public function __construct(Command $command) {
+  public function __construct(CommandBase $command) {
     $this->command = $command;
 
     // Determine if the "path" option has been set.
@@ -47,6 +50,7 @@ class Project {
 
     foreach (drush_scan_directory($this->path, '/\.info(\.yml)?/') as $file) {
       if ($this->info = drush_drupal_parse_info_file($file->filename)) {
+        $this->name = $file->name;
         break;
       }
     }
@@ -75,6 +79,14 @@ class Project {
       return !empty($info) && isset($info[$property]) ? $info[$property] : FALSE;
     }
     return $info;
+  }
+
+  public function getName() {
+    return $this->name;
+  }
+
+  public function getTitle() {
+    return $this->getInfo('name') ?: $this->name;
   }
 
   /**

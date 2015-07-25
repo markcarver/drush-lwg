@@ -1,3 +1,3 @@
-# Drush LWG Notice
+# Drupal LWG Asset Manager
 
 @todo document

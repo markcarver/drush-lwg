@@ -2,37 +2,53 @@
 
 namespace Drush\LWG;
 
+use Drush\Command\LWG;
 use Symfony\Component\Yaml\Yaml;
 
 /**
  * Class Notice
  * @package Drush\LWG
  */
-class Notice {
+class Notice extends \ArrayObject {
 
   const BASENAME = 'LWG_NOTICE';
   const EXTENSION = 'yml';
 
-  private $data = array();
-  private $exists = FALSE;
-  private $file = FALSE;
+  /**
+   * @var Cache
+   */
+  protected $cache;
+  protected $data = array();
+  protected $exists = FALSE;
+  protected $file = FALSE;
 
   /**
-   * @var Command
+   * @var LWG
    */
-  private $command;
+  protected $command;
 
   /**
    * Class constructor.
    *
-   * @param Command $command
+   * @param LWG $command
    *   The current instance of the command.
+   * @param array|object $input
+   *   The input parameter accepts an array.
+   * @param int $flags
+   *   Flags to control the behaviour of the ArrayObject object.
+   * @param string $iterator_class
+   *   Specify the class that will be used for iteration of the ArrayObject
+   *   object. ArrayIterator is the default class used.
    */
-  public function __construct(Command $command) {
+  public function __construct(LWG $command, array $input = array(), $flags = 0, $iterator_class = "ArrayIterator") {
     $this->command = $command;
+    $this->exchangeArray($input);
     $project = $command->getProject();
     $filename = $this->getFilename();
     $this->file = $project->getPath() . "/$filename";
+
+    $this->cache = new Cache($project->getName() . ':notice');
+    $cache = $this->cache->get();
 
     if (!file_exists($this->file)) {
       $prompt = dt("An existing !filename file was not found in @project.\nWould you like to create one?", array(
@@ -57,13 +73,39 @@ class Notice {
       )));
     }
     if (file_exists($this->file)) {
-      $this->data = Yaml::parse($this->file);
-      // Parser can return NULL or FALSE;
-      if (!$this->data) {
-        $this->data = array();
+      $array = array();
+      // Convert each entry into an Asset object.
+      foreach (Yaml::parse($this->file) ?: array() as $name => $data) {
+        if (is_array($data)) {
+          $array[$name] = new Asset($command, $name, $data);
+        }
       }
+      if (!$this->cache->exists()) {
+        $this->cache->set($array);
+      }
+      $this->exchangeArray($array);
       $this->exists = TRUE;
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getArrayCopy($objects = FALSE) {
+    // Subclass this method so we can convert assets into proper arrays.
+    $array = array();
+    foreach ($this as $key => $asset) {
+      $array[$key] = ($objects ? $asset : ($asset instanceof Asset ? $asset->getArrayCopy() : $asset));
+    }
+    return $array;
+  }
+
+  /**
+   * @todo document
+   */
+  public function getAssets($yaml = FALSE, $objects = FALSE) {
+    $array = $this->getArrayCopy($yaml ? FALSE : $objects);
+    return $yaml ? Yaml::dump($array, 4, 2) : $array;
   }
 
   /**
@@ -89,9 +131,9 @@ class Notice {
    * @todo document
    */
   public function save() {
-    $content = $this->command->getBanner();
+    $content = $this->command->render('banner.yml');
     if (!empty($this->data)) {
-      $content .= Yaml::dump($this->data, 4, 2, FALSE, TRUE);
+      $content .= $this->getAssets(TRUE);
     }
     return @file_put_contents($this->file, $content) !== FALSE;
   }

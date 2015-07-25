@@ -1,21 +1,42 @@
 {
-  "name": "markcarver/lwg",
+  "name": "markcarver/drush-lwg",
+  "title": "Drupal LWG Asset Manager",
   "type": "drupal-drush",
-  "description": "Manage external assets in a project for use with Drupal Licensing Working Group.",
-  "homepage": "https://github.com/markcarver/lwg",
+  "description": "Manages external assets in Drupal projects via a LWG file.",
+  "keywords": [
+    "asset",
+    "drupal",
+    "drush",
+    "licensing",
+    "notice",
+    "rights",
+    "lwg"
+  ],
+  "homepage": "https://www.drupal.org/project/drupal_lwg",
   "license": "GPL-2.0+",
   "minimum-stability": "stable",
   "prefer-stable": true,
   "authors": [
     { "name": "Mark Carver", "email": "mark.carver@me.com" }
   ],
+  "support": {
+    "issues": "https://github.com/markcarver/drush-lwg/issues",
+    "source": "https://github.com/markcarver/drush-lwg"
+  },
   "require": {
     "composer/installers": "~1.0",
-    "php": ">=5.3.0"
+    "php": ">=5.3.0",
+    "twig/twig": "^1.18",
+    "pear/Console_Color2": "^0.1.2"
   },
   "autoload": {
     "psr-0": {
       "Drush": "lib/"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0.x-dev"
     }
   }
 }

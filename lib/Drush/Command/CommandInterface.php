@@ -14,13 +14,6 @@ namespace Drush\Command;
 interface CommandInterface {
 
   /**
-   * Registers information about the command.
-   *
-   * @return array
-   */
-  public function info();
-
-  /**
    * Execute the command, after validation.
    *
    * @param mixed ...
@@ -29,6 +22,16 @@ interface CommandInterface {
    * @return void | BOOL
    */
   public function execute();
+
+  /**
+   * Provide help text for the command.
+   *
+   * @param mixed ...
+   *   Any passed arguments of the command.
+   *
+   * @return string
+   */
+  static function help();
 
   /**
    * Initiates the command, prior to validation.
